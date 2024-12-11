@@ -205,6 +205,18 @@ def load_eeg_data():
 
     raw.load_data()
 
+    # Define a list of channels you are interested in analyzing
+
+    channels_of_interest = ['Fp1', 'Fp2', 'F7', 'F3', 'F4', 'F8', 'T7', 'C3', 'Cz', 'C4', 'T8', 'P7', 'P3', 'Pz', 'P4', 'P8', 'O1', 'O2']
+
+    # 'channels_of_interest' is a list of specific electrode names that you want to retain for analysis.
+
+    # These typically correspond to electrodes positioned at various locations on the scalp (frontal, central, parietal, etc.).
+
+    # Select only the channels of interest from the raw EEG data
+
+    raw.pick_channels(channels_of_interest)
+
     # Apply bandpass filter
     raw.filter(1, 40, fir_design='firwin')
 
