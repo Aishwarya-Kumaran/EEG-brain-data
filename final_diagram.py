@@ -5,9 +5,7 @@ from PyQt5.QtCore import Qt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from scipy.interpolate import griddata
 import mne
-from matplotlib import colors as mcolors
 from matplotlib.collections import PathCollection
 
 class EEGVisualizerWindow(QMainWindow):
@@ -16,7 +14,6 @@ class EEGVisualizerWindow(QMainWindow):
         self.setGeometry(100, 100, 1600, 800)
 
         self.evoked = evoked
-        self.epochs = epochs
         self.channel_positions = channel_positions
         self.channel_names = list(channel_positions.keys())
         self.electrode_descriptions = electrode_descriptions
@@ -152,19 +149,18 @@ class EEGVisualizerWindow(QMainWindow):
 
         for channel_name, (times, channel_data) in self.selected_electrodes_data.items():
             color = self.color_map.get(channel_name, 'blue')
-            self.graph_ax.plot(times, channel_data.mean(axis=0), label=channel_name, color=color)
+            self.graph_ax.plot(times, channel_data, label=channel_name, color=color)
 
-            # Plot ±1 SD range
-            self.graph_ax.fill_between(
-                times,
-                channel_data.mean(axis=0) - channel_data.std(axis=0),
-                channel_data.mean(axis=0) + channel_data.std(axis=0),
-                alpha=0.2, color=color
-            )
+        # Add pre-stimulus and post-stimulus shading
+        self.graph_ax.axvspan(self.evoked.times[0], 0, color='lightblue', alpha=0.3, label='Pre-Stimulus')
+        self.graph_ax.axvspan(0, self.evoked.times[-1], color='lightgreen', alpha=0.2, label='Post-Stimulus')
 
         # Plot red vertical line to indicate current time
         current_time = self.evoked.times[self.time_slider.value()]
-        self.graph_ax.axvline(x=current_time, color='red', linestyle='--', lw=2)
+        self.graph_ax.axvline(x=current_time, color='gray', linestyle='--', lw=2)
+
+        # Add a vertical line at time = 0 to indicate the stimulus event
+        self.graph_ax.axvline(0, color='red', linestyle='--', label='Stimulus')
 
         self.graph_ax.legend()
         self.graph_canvas.draw()
@@ -194,28 +190,22 @@ class EEGVisualizerWindow(QMainWindow):
                 description = self.electrode_descriptions.get(channel_name, ["No description available."])
 
                 # Format description as a bulleted list
-                description_bullets = "\n".join([f"• {line}" for line in description])
+                description_bullets = "\n".join([f"\u2022 {line}" for line in description])
 
                 # Add row to table
                 row_position = self.description_table.rowCount()
                 self.description_table.insertRow(row_position)
                 self.description_table.setItem(row_position, 0, QTableWidgetItem(channel_name))
 
-                # Create a QTableWidgetItem with word wrapping enabled
                 description_item = QTableWidgetItem(description_bullets)
                 description_item.setTextAlignment(Qt.AlignTop | Qt.AlignLeft)
                 description_item.setFlags(description_item.flags() ^ Qt.ItemIsEditable)  # Make it non-editable
 
-                # Enable word wrapping
-                description_item.setTextAlignment(Qt.AlignTop | Qt.AlignLeft)
                 self.description_table.setItem(row_position, 1, description_item)
 
-                # Set row height based on content
-                self.description_table.resizeRowToContents(row_position)
-
                 channel_idx = self.evoked.info['ch_names'].index(channel_name)
-                channel_data = self.epochs.get_data()[:, channel_idx, :]
-                times = self.epochs.times
+                channel_data = self.evoked.data[channel_idx, :]
+                times = self.evoked.times
 
                 if channel_name not in self.selected_electrodes_data and channel_name in self.active_electrodes:
                     self.selected_electrodes_data[channel_name] = (times, channel_data)
@@ -223,7 +213,6 @@ class EEGVisualizerWindow(QMainWindow):
             self.update_plot()
 
 from mne_bids import BIDSPath, read_raw_bids
-import mne
 
 def load_eeg_data():
     bids_path = BIDSPath(
