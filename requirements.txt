@@ -1,0 +1,6 @@
+mne
+mne_bids
+matplotlib
+numpy
+PyQt5
+scipy
