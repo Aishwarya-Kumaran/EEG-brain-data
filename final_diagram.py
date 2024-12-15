@@ -274,6 +274,7 @@ if __name__ == "__main__":
 
     evoked, epochs, channel_positions, electrode_descriptions = load_eeg_data()
     window = EEGVisualizerWindow(evoked, epochs, channel_positions, electrode_descriptions)
+    window.setGeometry(100, 100, 1920, 1080)
     window.show()
 
     sys.exit(app.exec_())
