@@ -28,7 +28,7 @@ class EEGVisualizerWindow(QMainWindow):
         main_layout = QVBoxLayout(main_widget)  # Use a single column layout
 
         # Create a label for the title and center it in the layout
-        title_label = QLabel("EEG Visualization")
+        title_label = QLabel("EEG Visualization For a Subject Reading Braille")
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
         main_layout.addWidget(title_label)
@@ -42,7 +42,7 @@ class EEGVisualizerWindow(QMainWindow):
         graph_table_layout.addLayout(left_layout)
 
         # Create matplotlib figure for the topomap
-        self.topomap_fig = Figure(figsize=(6, 5))
+        self.topomap_fig = Figure(figsize=(6, 6))
         self.topomap_canvas = FigureCanvas(self.topomap_fig)
         left_layout.addWidget(self.topomap_canvas)
 
@@ -63,13 +63,11 @@ class EEGVisualizerWindow(QMainWindow):
         graph_table_layout.addLayout(middle_layout)
 
         # Create matplotlib figure for the graph
-        self.graph_fig = Figure(figsize=(8, 5))
+        self.graph_fig = Figure(figsize=(12, 6))
         self.graph_canvas = FigureCanvas(self.graph_fig)
         middle_layout.addWidget(self.graph_canvas)
 
         self.graph_ax = self.graph_fig.add_subplot(111)
-        self.graph_ax.set_xlabel('Time (s)')
-        self.graph_ax.set_ylabel('Amplitude (µV)')
         self.graph_ax.grid()
 
         # Create right layout for electrode description table
@@ -162,6 +160,11 @@ class EEGVisualizerWindow(QMainWindow):
         # Add a vertical line at time = 0 to indicate the stimulus event
         self.graph_ax.axvline(0, color='red', linestyle='--', label='Stimulus')
 
+        # Add axis labels
+        self.graph_ax.set_xlabel('Time (s)')
+        self.graph_ax.set_ylabel('Amplitude (µV)')
+        self.graph_ax.grid()
+
         self.graph_ax.legend()
         self.graph_canvas.draw()
 
@@ -202,6 +205,9 @@ class EEGVisualizerWindow(QMainWindow):
                 description_item.setFlags(description_item.flags() ^ Qt.ItemIsEditable)  # Make it non-editable
 
                 self.description_table.setItem(row_position, 1, description_item)
+
+                self.description_table.setWordWrap(True)
+                self.description_table.resizeRowsToContents()
 
                 channel_idx = self.evoked.info['ch_names'].index(channel_name)
                 channel_data = self.evoked.data[channel_idx, :]
@@ -264,7 +270,11 @@ def load_eeg_data():
         'Pz': ["Self-reflection", "Visualizing mental images"],
         'P4': ["Understanding where things are around you", "Paying attention to the environment", "Solving math problems and reading"],
         'O1': ["Visual processing (right visual field)"],
-        'O2': ["Visual processing (right visual field)"]
+        'O2': ["Visual processing (right visual field)"],
+        'T7': ["Processing auditory information from the left ear", "Understanding language and speech on the left side", "Memory processing and recognition", "Visual-spatial processing in the left hemisphere"],
+        'T8': ["Processing auditory information from the right ear", "Understanding language and speech on the right side", "Memory processing and recognition", "Visual-spatial processing in the right hemisphere"],
+        'P7': ["Sensory processing on the left side of the body", "Spatial awareness and coordination on the left side", "Attention and focus", "Integration of sensory input from different sources on the left side"],
+        'P8': ["Sensory processing on the right side of the body", "Spatial awareness and coordination on the right side", "Attention and focus", "Integration of sensory input from different sources on the right side"]
     }
 
     return evoked, epochs, channel_positions, electrode_descriptions
