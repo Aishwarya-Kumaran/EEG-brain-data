@@ -42,7 +42,7 @@ class EEGVisualizerWindow(QMainWindow):
         graph_table_layout.addLayout(left_layout)
 
         # Create matplotlib figure for the topomap
-        self.topomap_fig = Figure(figsize=(6, 6))
+        self.topomap_fig = Figure(figsize=(4, 4))
         self.topomap_canvas = FigureCanvas(self.topomap_fig)
         left_layout.addWidget(self.topomap_canvas)
 
@@ -63,22 +63,37 @@ class EEGVisualizerWindow(QMainWindow):
         graph_table_layout.addLayout(middle_layout)
 
         # Create matplotlib figure for the graph
-        self.graph_fig = Figure(figsize=(12, 6))
+        self.graph_fig = Figure(figsize=(10, 5))
         self.graph_canvas = FigureCanvas(self.graph_fig)
         middle_layout.addWidget(self.graph_canvas)
 
         self.graph_ax = self.graph_fig.add_subplot(111)
         self.graph_ax.grid()
 
+        # Create horizontal layout to hold the graphs and the table
+        graph_table_layout = QHBoxLayout()
+        main_layout.addLayout(graph_table_layout)
+
+        # Create left vertical layout for the topomap and controls
+        left_layout = QVBoxLayout()
+        graph_table_layout.addLayout(left_layout)
+
+        # Create middle layout for the graph
+        middle_layout = QVBoxLayout()
+        graph_table_layout.addLayout(middle_layout)
+
         # Create right layout for electrode description table
         right_layout = QVBoxLayout()
         graph_table_layout.addLayout(right_layout)
+
 
         self.description_table = QTableWidget()
         self.description_table.setColumnCount(2)
         self.description_table.setHorizontalHeaderLabels(["Electrode", "Description"])
         self.description_table.horizontalHeader().setStretchLastSection(True)
+        self.description_table.resizeRowsToContents()
         right_layout.addWidget(self.description_table)
+
 
         # Initialize EEG data and plots
         self.initialize_plot()
@@ -236,7 +251,7 @@ def load_eeg_data():
 
     channels_of_interest = ['Fp1', 'Fp2', 'F7', 'F3', 'F4', 'F8', 'T7', 'C3', 'Cz', 'C4', 'T8', 'P7', 'P3', 'Pz', 'P4', 'P8', 'O1', 'O2']
     raw.pick_channels(channels_of_interest)
-    raw.filter(1, 40, fir_design='firwin')
+    raw.filter(1, 30, fir_design='firwin')
 
     events, event_id = mne.events_from_annotations(raw)
 
@@ -270,7 +285,7 @@ def load_eeg_data():
         'Pz': ["Self-reflection", "Visualizing mental images"],
         'P4': ["Understanding where things are around you", "Paying attention to the environment", "Solving math problems and reading"],
         'O1': ["Visual processing (right visual field)"],
-        'O2': ["Visual processing (right visual field)"],
+        'O2': ["Visual processing (left visual field)"],
         'T7': ["Processing auditory information from the left ear", "Understanding language and speech on the left side", "Memory processing and recognition", "Visual-spatial processing in the left hemisphere"],
         'T8': ["Processing auditory information from the right ear", "Understanding language and speech on the right side", "Memory processing and recognition", "Visual-spatial processing in the right hemisphere"],
         'P7': ["Sensory processing on the left side of the body", "Spatial awareness and coordination on the left side", "Attention and focus", "Integration of sensory input from different sources on the left side"],
